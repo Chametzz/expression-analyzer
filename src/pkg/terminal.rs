@@ -18,6 +18,7 @@ pub fn show_cursor(show: bool) {
 
 #[allow(dead_code)]
 pub fn read_line(prompt: &str) -> String {
+    show_cursor(true);
     print!("{}", prompt);
     let _ = io::stdout().flush();
 

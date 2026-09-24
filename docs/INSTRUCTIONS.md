@@ -59,3 +59,52 @@
     * `get_variable(name)`: Consultar el valor asignado a un identificador (retorna `Option`).
     * `register_operator(symbol)`: Incrementar el contador de apariciones de un operador (`+`, `-`, `*`, `/`).
     * `get_variables()` y `get_operators()`: Retornar referencias de lectura a las colecciones internas para las vistas de consulta.
+
+---
+
+## Casos de Uso
+
+### 1. `use_cases/parse_expression.rs`
+* **Propósito:** Transformar una cadena de texto en un objeto `Expression` compuesto por tokens válidos.
+* **Requisitos:**
+  * **Función `execute(raw_input: &str) -> Result<Expression, EvaluationError>`:**
+    * Recibir la cadena ingresada por el usuario y remover espacios en blanco innecesarios.
+    * Recorrer el texto identificando números flotantes, variables, operadores aritméticos (`+`, `-`, `*`, `/`) y paréntesis.
+    * Retornar un `EvaluationError::SyntaxError` si encuentra caracteres no reconocidos o paréntesis desbalanceados.
+    * Retornar un `EvaluationError::EmptyExpression` si la entrada está vacía.
+    * Construir y retornar una nueva `Expression` conteniendo el texto original y el vector de tokens generado.
+
+---
+
+### 2. `use_cases/evaluate_expression.rs`
+* **Propósito:** Orquestar el análisis, registro y cálculo matemático de una expresión o asignación.
+* **Requisitos:**
+  * **Función `execute(symbol_table: &mut SymbolTable, input: &str) -> Result<f64, EvaluationError>`:**
+    * Detectar si la entrada es una asignación de variable (ej. `x = 10` o `x = y + 5`).
+    * Invocar a `parse_expression::execute` para obtener el objeto `Expression`.
+    * Registrar en el `SymbolTable` los operadores encontrados durante el análisis utilizando `register_operator`.
+    * Evaluar los tokens respetando la jerarquía de operadores y paréntesis:
+      * Para variables: buscar su valor en `SymbolTable` vía `get_variable` (retornar `EvaluationError::UndefinedVariable` si no existe).
+      * Para operaciones: invocar el método `apply` de `Operator`.
+    * Si es una asignación (`var = expr`), guardar/actualizar el resultado en `SymbolTable` usando `set_variable`.
+    * Retornar el resultado numérico (`f64`) de la evaluación.
+
+---
+
+### 3. `use_cases/get_stored_variables.rs`
+* **Propósito:** Proveer a las vistas el listado de identificadores y sus valores numéricos persistidos en la sesión.
+* **Requisitos:**
+  * **Función `execute(symbol_table: &SymbolTable) -> &HashMap<String, f64>`:**
+    * Recibir una referencia de solo lectura del `SymbolTable`.
+    * Invocar el método `get_variables()` del `SymbolTable`.
+    * Retornar la colección de variables para ser iterada y renderizada por la vista correspondiente.
+
+---
+
+### 4. `use_cases/get_stored_operators.rs`
+* **Propósito:** Proveer a las vistas el reporte de frecuencia de uso de los operadores aritméticos registrados en la sesión.
+* **Requisitos:**
+  * **Función `execute(symbol_table: &SymbolTable) -> &HashMap<String, usize>`:**
+    * Recibir una referencia de solo lectura del `SymbolTable`.
+    * Invocar el método `get_operators()` del `SymbolTable`.
+    * Retornar la colección de contadores de operadores para su despliegue en la vista.
