@@ -1,6 +1,10 @@
-use crate::pkg::terminal::{self};
+use crate::{
+    core::symbol_table::{self, SymbolTable},
+    pkg::terminal::{self},
+    views::{evaluator, operator_table, variable_table},
+};
 
-pub fn render() {
+pub fn render(symbol_table: &mut SymbolTable) {
     loop {
         terminal::clear();
         println!("--- ANALIZADOR DE EXPRESIONES ---");
@@ -10,9 +14,9 @@ pub fn render() {
         println!("[exit] Salir");
         let option = terminal::read_line("Selecciona una opción: ");
         match option.trim() {
-            "1" => println!("placeholder"),
-            "2" => println!("placeholder"),
-            "3" => println!("placeholder"),
+            "1" => variable_table::render(symbol_table),
+            "2" => operator_table::render(symbol_table),
+            "3" => evaluator::render(symbol_table),
             "exit" => {
                 break;
             }
